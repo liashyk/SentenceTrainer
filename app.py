@@ -19,7 +19,7 @@ GROQ_API_KEY = "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"
 client = Groq(api_key=GROQ_API_KEY)
 
 # Используем 70b модель — она очень быстрая на Groq и отлично понимает грамматику
-MODEL_NAME = "qwen/qwen3.8-27b"
+MODEL_NAME = "openai/gpt-oss-120b"
 
 # --- 2. ЛОГИКА ИИ (Генерация и Проверка) ---
 def generate_sentences(level, count):
@@ -27,13 +27,13 @@ def generate_sentences(level, count):
     prompt = f"""
     Сгенерируй {count} предложений на русском для перевода на немецкий.
     Сложность: {level}.
-    Сделай фразы жизненными. Темы: покупки в EDEKA, Netto или Lidl, поездки по Deutschlandticket, бронирование на Airbnb, программирование на Python, занятия в Institut Rommel, поход в Cinecitta Multiplexkino.
+    Старайся их делать сложными и разнообразными, с разными структурами и лексикой.
     
     Верни строго JSON-объект с ключом 'sentences', который содержит список.
     Пример структуры:
     {{
       "sentences": [
-        {{ "id": "1", "ru": "текст", "hint": "подсказка (макс 3 слова)" }}
+        {{ "id": "1", "ru": "текст", "hint": "подсказка (например какое время, какой conjuction или preposition и на немецком)" }}
       ]
     }}
     """
@@ -63,7 +63,7 @@ def check_translation(original, translation):
       "counts": {{"typos": 0, "wrong_word": 0, "grammar": 0, "article_gender": 0}},
       "details": {{"typos": [], "wrong_word": [], "grammar": [], "article_gender": []}}
     }}
-    Пояснения в массивах 'details' пиши на русском, в 3-5 слов максимум.
+    Пояснения в массивах 'details' пиши на русском, старайся как можно меньше.
     """
     try:
         response = client.chat.completions.create(
@@ -101,7 +101,7 @@ with st.sidebar:
             "B2 (Продвинутый)"
         ]
     )
-    num_sentences = st.slider("Количество предложений:", min_value=1, max_value=5, value=3)
+    num_sentences = st.slider("Количество предложений:", min_value=1, max_value=10, value=5)
     
     if st.button("Сгенерировать новые предложения", type="primary"):
         with st.spinner("ИИ придумывает предложения..."):
@@ -121,7 +121,7 @@ else:
             input_key = f"input_{item['id']}"
             btn_key = f"btn_{item['id']}"
             
-            user_text = st.text_input("Ваш перевод на немецкий:", key=input_key)
+            user_text = st.text_area("Ваш перевод на немецкий:", key=input_key, height=100)
             
             if st.button("Проверить", key=btn_key):
                 if user_text.strip():
